@@ -38,7 +38,7 @@ describe('AuthUtils', () => {
 	test('generateToken returns token when passing data object', () => {
 		const user = {
 			id: 1,
-			username: 'username',
+			email: 'email@email.com',
             name: 'name'
 		};
 
@@ -61,8 +61,8 @@ describe('AuthUtils', () => {
 
 	test('decryptToken returns user decrypted when passing a valid token', () => {
 		const user = {
-			id: 1,
-			username: 'username'
+			_id: 1,
+			email: 'email@email.com'
 		};
 
 		const encryptedUserToken = AuthUtils.generateToken(user);

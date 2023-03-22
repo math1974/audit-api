@@ -1,20 +1,12 @@
 import { UserModel } from '@models';
 import { AuthUtils } from '@utils';
-import { Op } from 'sequelize';
 import { omit } from 'lodash'
 
 export default class AuthService {
 	async login(data) {
 		const user = await UserModel.findOne({
-			where: {
-				[Op.or]: [{
-					username: data.username
-				}, {
-					email: data.username
-				}],
-				is_deleted: false
-			},
-			attributes: ['id', 'username', 'name', 'profession', 'email', 'born', 'created_at', 'password']
+			email: data.email,
+			is_deleted: false
 		});
 
 		const isValidPassword = await AuthUtils.comparePassword(data.password, user?.password);

@@ -6,16 +6,15 @@ const schemas = {
 		body: z.object({
 			name: z.string(),
 			email: z.string().email(),
-			username: z.string(),
             password: z.string(),
-			born: z.string().refine(value => DateUtils.isValid(value, 'YYYY-MM-DD', true)),
+			born: z.string().refine(value => DateUtils.isValid(value, 'YYYY-MM-DD', true)).optional(),
 			profession: z.string().optional()
 		})
 	},
 	update: {
 		body: z.object({
 			name: z.string(),
-			born: z.string().refine(value => DateUtils.isValid(value, 'YYYY-MM-DD', true)),
+			born: z.string().refine(value => DateUtils.isValid(value, 'YYYY-MM-DD', true)).optional(),
 			profession: z.string().default(null).nullable()
 		})
 	},

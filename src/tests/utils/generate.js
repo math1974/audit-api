@@ -31,7 +31,6 @@ const buildError = error => {
 
 const generateUserAndToken = async (overrides = {}) => {
 	const userInfo = {
-		username: 'username',
 		password: 'password',
 		name: 'name',
 		email: 'email@email.com',

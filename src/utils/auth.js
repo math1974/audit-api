@@ -24,10 +24,10 @@ export default class AuthUtils {
         }
 
         return jwt.sign({
-			iss: user.id,
+			iss: user._id,
 			user: {
-				id: user.id,
-                username: user.username
+				_id: user._id,
+                email: user.email
 			}
 		}, key, { expiresIn: 86400 });
 	}

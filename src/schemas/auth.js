@@ -3,7 +3,7 @@ import { z } from 'zod';
 const schemas = {
 	login: {
 		body: z.object({
-			username: z.string(),
+			email: z.string(),
             password: z.string()
 		})
 	}

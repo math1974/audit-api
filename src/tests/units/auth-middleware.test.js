@@ -7,8 +7,8 @@ describe("AuthMiddleware", () => {
 	describe("#isAuthorized", () => {
 		test("should call next if token is valid", () => {
 			const user = {
-				id: 1,
-				username: "username",
+				_id: 1,
+				email: "email",
 			};
 
 			const token = AuthUtils.generateToken(user);
@@ -24,7 +24,7 @@ describe("AuthMiddleware", () => {
 			AuthMiddleware.isAuthorized(req, {}, next);
 
 			expect(req.auth).toMatchObject({
-				id: user.id
+				id: user._id
 			})
 
 			expect(next).toHaveBeenCalledWith();

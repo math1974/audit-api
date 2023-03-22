@@ -62,7 +62,8 @@ export default class UserController extends BaseController {
 	async find(req, res) {
 		try {
 			const filter = {
-				id: req.auth.id
+				id: req.auth.id,
+				is_from_find: true
 			};
 
 			const response = await this.userService.find(filter);

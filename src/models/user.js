@@ -1,69 +1,47 @@
-import { Model } from 'sequelize';
-
+import mongoose from 'mongoose';
 import { AuthUtils } from '@utils';
 
-export default class User extends Model {
-	static load(sequelize, DataTypes) {
-		return super.init({
-			name: {
-				type: DataTypes.TEXT,
-				allowNull: false
-			},
-			email: {
-				type: DataTypes.TEXT,
-				allowNull: true,
-				defaultValue: null
-			},
-			username: {
-				type: DataTypes.STRING,
-				allowNull: true,
-				defaultValue: null
-			},
-			password: {
-				type: DataTypes.STRING,
-                allowNull: false
-			},
-			born: {
-				type: DataTypes.DATEONLY,
-                allowNull: true,
-				defaultValue: null
-			},
-			profession: {
-				type: DataTypes.STRING,
-				allowNull: true,
-                defaultValue: null
-			},
-			is_deleted: {
-				type: DataTypes.BOOLEAN,
-				allowNull: false,
-				defaultValue: false
-			},
-			created_at: {
-				type: DataTypes.DATE,
-				allowNull: false,
-				defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
-			},
-			updated_at: {
-				type: DataTypes.DATE,
-				allowNull: false,
-				defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
-			}
-		}, {
-			defaultScope: {
-				where: {
-					is_deleted: false
-				},
-				attributes: ['id', 'name', 'email', 'username', 'born', 'profession']
-			},
-			timestamps: true,
-			sequelize,
-			modelName: 'user',
-			tableName: 'users',
-			hooks: {
-				beforeCreate: user => {
-					user.password = AuthUtils.encryptPassword(user.password);
-				}
-			}
-		});
+const Schema = mongoose.Schema;
+
+const UserSchema = new Schema({
+	name: {
+		type: String,
+		required: true
+	},
+	email: {
+		type: String,
+		required: true
+	},
+	password: {
+		type: String,
+		required: true
+	},
+	profession: {
+		type: String,
+		default: null,
+		required: false
+	},
+	born: {
+		type: Date,
+		default: null,
+		required: false
+	},
+	is_deleted: {
+		type: Boolean,
+		required: true,
+		default: false
+	},
+	created_at: {
+		type: Date,
+		default: Date.now,
+		required: true
 	}
-}
+});
+
+UserSchema.pre('save', function(next) {
+	this.password = AuthUtils.encryptPassword(this.password);
+
+	next();
+});
+
+export default mongoose.model('User', UserSchema);

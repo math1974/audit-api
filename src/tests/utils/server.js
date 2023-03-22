@@ -9,11 +9,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 export const app = express();
 
-const databaseModule = new Database();
-
-if (Object.keys(databaseModule.models).length === 0) {
-	databaseModule.connect();
-}
+Database.connect();
 
 app.use(express.json());
 

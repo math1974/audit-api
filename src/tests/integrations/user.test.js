@@ -1,14 +1,14 @@
 import HttpStatus from "http-status";
 import app from "@test-utils/server";
+import { resetTable } from "@tests/helper";
 import supertest from "supertest";
 import { UserModel } from "@models";
 import { AuthUtils } from "@utils";
+import { ObjectId } from "mongoose";
 
 describe("UserController", () => {
 	beforeEach(async () => {
-		await UserModel.sync({
-			force: true,
-		});
+		await resetTable(UserModel);
 	});
 
 	describe("#create", () => {
@@ -23,10 +23,9 @@ describe("UserController", () => {
 		test("with valid data", async () => {
 			const userInfo = {
 				name: "test",
-				username: "test",
 				password: "12345678",
 				born: "2022-07-09",
-				email: "test@example.com",
+				email: "email@example.com",
 			};
 
 			const { body: createUserResponse } = await supertest(app)
@@ -34,44 +33,30 @@ describe("UserController", () => {
 				.send(userInfo)
 				.expect(HttpStatus.OK);
 
-			expect(createUserResponse.data).toHaveProperty("id");
+			expect(createUserResponse.data).toHaveProperty("_id");
 
-			const { body: loginWithEmailResponse } = await supertest(app)
+			const { body: loginResponse } = await supertest(app)
 				.post("/auth/login")
 				.send({
-					username: userInfo.email,
+					email: userInfo.email,
 					password: userInfo.password,
 				})
 				.expect(HttpStatus.OK);
 
-			expect(loginWithEmailResponse.data.user).toHaveProperty(
-				"id",
-				createUserResponse.data.id
+			expect(loginResponse.data.user).toHaveProperty(
+				"_id",
+				createUserResponse.data._id
 			);
-			expect(loginWithEmailResponse.data.token).not.toBeNull();
 
-			const { body: loginWithUsername } = await supertest(app)
-				.post("/auth/login")
-				.send({
-					username: userInfo.username,
-					password: userInfo.password,
-				})
-				.expect(HttpStatus.OK);
-
-			expect(loginWithUsername.data.user).toHaveProperty(
-				"id",
-				createUserResponse.data.id
-			);
-			expect(loginWithUsername.data.token).not.toBeNull();
+			expect(loginResponse.data.token).not.toBeNull();
 		});
 
-		test("with username that exists", async () => {
+		test("with email that exists", async () => {
 			const userInfo = {
 				name: "test",
-				username: "test",
 				password: "12345678",
 				born: "2022-07-09",
-				email: "test@example.com",
+				email: "email@example.com",
 			};
 
 			await supertest(app)
@@ -103,10 +88,9 @@ describe("UserController", () => {
 			it("should return INVALID_SCHEMA", async () => {
 				const userInfo = {
 					name: "test",
-					username: "test",
 					password: "12345678",
 					born: "2022-07-09",
-					email: "test@example.com",
+					email: "email@example.com",
 				};
 
 				const userCreated = await UserModel.create(userInfo);
@@ -126,10 +110,9 @@ describe("UserController", () => {
 			it("should return USER_NOT_FOUND", async () => {
 				const userInfo = {
 					name: "test",
-					username: "test",
 					password: "12345678",
 					born: "2022-07-09",
-					email: "test@example.com",
+					email: "email@example.com",
 					is_deleted: true,
 				};
 
@@ -157,10 +140,9 @@ describe("UserController", () => {
 			it("should return the user updated", async () => {
 				const userInfo = {
 					name: "test",
-					username: "test",
 					password: "12345678",
 					born: "2022-07-09",
-					email: "test@example.com",
+					email: "email@example.com",
 				};
 
 				const userCreated = await UserModel.create(userInfo);
@@ -169,7 +151,6 @@ describe("UserController", () => {
 
 				const userChanges = {
 					name: "new name ful",
-					born: "2022-07-11",
 					profession: "developer",
 				};
 
@@ -180,16 +161,12 @@ describe("UserController", () => {
 					.expect(HttpStatus.OK);
 
 				expect(updateUserResponse.data).toHaveProperty(
-					"id",
-					userCreated.id
+					"_id",
+					`${userCreated._id}`
 				);
 				expect(updateUserResponse.data).toHaveProperty(
 					"profession",
 					userChanges.profession
-				);
-				expect(updateUserResponse.data).toHaveProperty(
-					"born",
-					userChanges.born
 				);
 				expect(updateUserResponse.data).toHaveProperty(
 					"name",
@@ -214,14 +191,15 @@ describe("UserController", () => {
 			it("should return USER_NOT_FOUND", async () => {
 				const userInfo = {
 					name: "test",
-					username: "test",
 					password: "12345678",
 					born: "2022-07-09",
-					email: "test@example.com",
+					email: "email@example.com",
 					is_deleted: true,
 				};
 
 				const userCreated = await UserModel.create(userInfo);
+
+				userCreated._id = `${userCreated._id}`;
 
 				const token = AuthUtils.generateToken(userCreated.toJSON());
 
@@ -238,13 +216,14 @@ describe("UserController", () => {
 			it("should return true", async () => {
 				const userInfo = {
 					name: "test",
-					username: "test",
 					password: "12345678",
 					born: "2022-07-09",
-					email: "test@example.com",
+					email: "email@example.com",
 				};
 
 				const userCreated = await UserModel.create(userInfo);
+
+				userCreated._id = `${userCreated._id}`;
 
 				const token = AuthUtils.generateToken(userCreated.toJSON());
 

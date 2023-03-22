@@ -2,6 +2,8 @@ import { pick } from "lodash";
 
 import { UserModel } from "@models";
 
+import { resetTable } from "@tests/helper";
+
 import { AuthService } from "@services";
 
 const createUser = (data) => {
@@ -16,9 +18,7 @@ describe("AuthService", () => {
 	});
 
 	beforeEach(async () => {
-		await UserModel.sync({
-			force: true,
-		});
+		await resetTable(UserModel);
 	});
 
 	describe("#login", () => {
@@ -26,12 +26,12 @@ describe("AuthService", () => {
 			test("it should return the user and token", async () => {
 				const user = await createUser({
 					name: "John",
-					username: "John1923",
+					email: "John1923",
 					password: "123456",
 				});
 
 				const loginResponse = await service.login({
-					username: "John1923",
+					email: "John1923",
 					password: "123456",
 				});
 
@@ -41,7 +41,6 @@ describe("AuthService", () => {
 						"name",
 						"profession",
 						"email",
-						"username",
 						"born",
 					])
 				);
@@ -50,11 +49,11 @@ describe("AuthService", () => {
 			});
 		});
 
-		describe("with username that does not exists", () => {
+		describe("with email that does not exists", () => {
 			test("it should return NOT_FOUND error", async () => {
 				const errorResponse = await service
 					.login({
-						username: "UNEXISTENT_USERNAME",
+						email: "UNEXISTENT_email@email.com",
 						password: "123456",
 					})
 					.catch((r) => r);

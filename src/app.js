@@ -16,8 +16,6 @@ class App {
 		this.app = express();
 
 		this.port = port || process.env.PORT || 3000;
-
-		this.databaseModule = new Database();
 	}
 
 	setup() {
@@ -50,7 +48,7 @@ class App {
 
 	start() {
         return new Promise(async resolve => {
-            await this.databaseModule.connect();
+            await Database.connect();
 
             this.app.listen(this.port, async () => {
                 console.log(`Listening on port ${this.port}`)

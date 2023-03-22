@@ -1,17 +1,9 @@
 import { UserModel } from '@models';
 
-import { Op } from 'sequelize';
-
 export default class UserService {
 	async create(data) {
 		const userExists = await UserModel.count({
-			where: {
-				[Op.or]: [{
-					username: data.username
-				}, {
-					email: data.username
-				}]
-			}
+			email: data.email
 		});
 
 		if (userExists) {
@@ -20,15 +12,13 @@ export default class UserService {
 
 		const user = await UserModel.create(data);
 
-		return this.find({ id: user.id });
+		return this.find({ id: user._id });
 	}
 
 	async find(filter) {
 		const user = await UserModel.findOne({
-			where: {
-				id: filter.id
-			},
-			useMaster: true
+			_id: filter.id,
+			is_deleted: false
 		});
 
 		if (!user) {
@@ -39,44 +29,36 @@ export default class UserService {
 	}
 
 	async update({ changes, filter }) {
-		const userExists = await UserModel.count({
-			where: {
-				id: filter.logged_user_id,
-				is_deleted: false
-			}
+		const userExists = await UserModel.findOne({
+			_id: filter.logged_user_id,
+			is_deleted: false
 		});
 
 		if (!userExists) {
 			throw new Error('USER_NOT_FOUND');
 		}
 
-		await UserModel.update(changes, {
-			where: {
-				id: filter.logged_user_id
-			}
-		});
+		await UserModel.updateOne({
+			_id: filter.logged_user_id
+		}, changes);
 
 		return this.find({ id: filter.logged_user_id });
 	}
 
 	async remove(filter) {
 		const whereCondition = {
-			id: filter.logged_user_id,
+			_id: filter.logged_user_id,
 			is_deleted: false
 		};
 
-		const userExists = await UserModel.count({
-			where: whereCondition
-		});
+		const userExists = await UserModel.findOne(whereCondition);
 
 		if (!userExists) {
 			throw new Error('USER_NOT_FOUND');
 		}
 
-		await UserModel.update({
+		await UserModel.updateOne(whereCondition, {
 			is_deleted: true
-		}, {
-			where: whereCondition
 		});
 
 		return true;

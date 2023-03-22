@@ -1,5 +1,7 @@
 import { UserModel } from "@models";
 
+import { resetTable } from "@tests/helper";
+
 import { UserService } from "@services";
 
 import { omit } from "lodash";
@@ -12,17 +14,15 @@ describe("UserService", () => {
 	});
 
 	beforeEach(async () => {
-		await UserModel.sync({
-			force: true,
-		});
+		await resetTable(UserModel);
 	});
 
 	describe("#create", () => {
-		describe("with valid username", () => {
+		describe("with valid email", () => {
 			it("should return the user and token", async () => {
 				const userInfo = {
 					name: "John Doe",
-					username: "John1923",
+					email: "email@example.com",
 					password: "12345678",
 				};
 
@@ -34,18 +34,18 @@ describe("UserService", () => {
 			});
 		});
 
-		describe("with username that exists", () => {
+		describe("with email that exists", () => {
 			it("should return USER_EXISTS error", async () => {
 				await UserModel.create({
 					name: "John Doe",
-					username: "user1234",
+					email: "email@example.com",
 					password: "12345678",
 				});
 
 				const errorResponse = await service
 					.create({
 						name: "New User",
-						username: "user1234",
+						email: "email@example.com",
 						password: "123456",
 					})
 					.catch((r) => r);
@@ -63,12 +63,14 @@ describe("UserService", () => {
 				const update = await service
 					.update({
 						filter: {
-							logged_user_id: 99999999
+							logged_user_id: "641ae791c39cdb1e03aae77929929",
 						},
 					})
 					.catch((e) => e);
 
-				expect(update).toMatchInlineSnapshot(`[Error: USER_NOT_FOUND]`);
+				expect(update).toMatchInlineSnapshot(
+					`[CastError: Cast to ObjectId failed for value "641ae791c39cdb1e03aae77929929" (type string) at path "_id" for model "User"]`
+				);
 			});
 		});
 
@@ -76,28 +78,28 @@ describe("UserService", () => {
 			it("should return the user updated", async () => {
 				const userCreated = await service.create({
 					name: "John Doe",
-					username: "user1234",
-					email: "email@email.com",
+					email: "email@example.com",
 					password: "12345678",
 				});
 
 				const userChanges = {
 					name: "New User",
-					born: "2022-09-07",
-					profession: "Developer"
+					profession: "Developer",
 				};
 
 				const userUpdated = await service.update({
 					filter: {
-						logged_user_id: userCreated.id
+						logged_user_id: userCreated._id,
 					},
-					changes: userChanges
+					changes: userChanges,
 				});
 
-				expect(userUpdated).toHaveProperty('id', userCreated.id);
-				expect(userUpdated).toHaveProperty('name', userChanges.name);
-				expect(userUpdated).toHaveProperty('born', userChanges.born);
-				expect(userUpdated).toHaveProperty('profession', userChanges.profession);
+				expect(userUpdated).toHaveProperty("_id", userCreated._id);
+				expect(userUpdated).toHaveProperty("name", userChanges.name);
+				expect(userUpdated).toHaveProperty(
+					"profession",
+					userChanges.profession
+				);
 			});
 		});
 	});
@@ -107,11 +109,13 @@ describe("UserService", () => {
 			it("should return USER_NOT_FOUND", async () => {
 				const removeResponse = await service
 					.remove({
-						logged_user_id: 99999999
+						logged_user_id: "641ae791c39cdb1e03aae77929929",
 					})
 					.catch((e) => e);
 
-				expect(removeResponse).toMatchInlineSnapshot(`[Error: USER_NOT_FOUND]`);
+				expect(removeResponse).toMatchInlineSnapshot(
+					`[CastError: Cast to ObjectId failed for value "641ae791c39cdb1e03aae77929929" (type string) at path "_id" for model "User"]`
+				);
 			});
 		});
 
@@ -119,13 +123,12 @@ describe("UserService", () => {
 			it("should return true", async () => {
 				const userCreated = await service.create({
 					name: "John Doe",
-					username: "user1234",
-					email: "email@email.com",
+					email: "email@example.com",
 					password: "12345678",
 				});
 
 				const deleted = await service.remove({
-					logged_user_id: userCreated.id
+					logged_user_id: userCreated._id,
 				});
 
 				expect(deleted).toBe(true);
@@ -138,11 +141,13 @@ describe("UserService", () => {
 			it("should return USER_NOT_FOUND", async () => {
 				const findResponse = await service
 					.find({
-						id: 99999999
+						id: "641ae791c39cdb1e03aae77929929",
 					})
 					.catch((e) => e);
 
-				expect(findResponse).toMatchInlineSnapshot(`[Error: USER_NOT_FOUND]`);
+				expect(findResponse).toMatchInlineSnapshot(
+					`[CastError: Cast to ObjectId failed for value "641ae791c39cdb1e03aae77929929" (type string) at path "_id" for model "User"]`
+				);
 			});
 		});
 
@@ -150,13 +155,12 @@ describe("UserService", () => {
 			it("should return the user", async () => {
 				const userCreated = await service.create({
 					name: "John Doe",
-					username: "user1234",
-					email: "email@email.com",
+					email: "email@example.com",
 					password: "12345678",
 				});
 
 				const userFound = await service.find({
-					id: userCreated.id
+					id: userCreated._id,
 				});
 
 				expect(userFound).toEqual(userCreated);

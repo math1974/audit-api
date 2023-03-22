@@ -1,9 +1,7 @@
 import server from '../app';
 
 const resetTable = model => {
-	return model.sync({
-		force: true
-	});
+	return model.deleteMany();
 }
 
 export {
